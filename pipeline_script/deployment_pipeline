@@ -47,9 +47,16 @@ pipeline {
             steps {
                 script {
                     sh """
+                    # Create namespace safely
+                    kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+
                     # Install ArgoCD
-                    kubectl create namespace argocd || true
-                    kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+                    kubectl apply --server-side -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+                    # Wait until ArgoCD server is ready
+                    kubectl wait --for=condition=available --timeout=300s deployment/argocd-server -n argocd
+
+                    # Expose ArgoCD UI
                     kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
                     """
                 }
