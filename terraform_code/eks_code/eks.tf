@@ -1,9 +1,10 @@
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "19.15.1"
+  version = "20.24"
 
   cluster_name                   = local.name
   cluster_endpoint_public_access = true
+  cluster_endpoint_private_access  = true
 
   cluster_addons = {
     coredns = {
@@ -26,7 +27,7 @@ module "eks" {
       max_size     = 4
       desired_size = 2
 
-      instance_types = ["t2.medium"]
+      instance_types = ["t3.medium"]
       capacity_type  = "SPOT"
 
       tags = {
